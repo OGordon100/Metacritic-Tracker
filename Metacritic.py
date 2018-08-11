@@ -10,7 +10,9 @@ dframe = pd.DataFrame(data={"Title": [],
                             "Release Date": []})
 
 # For each metacritic page
-for page_no in range(0,2): #157
+for page_no in range(0,157): #157
+    
+    # Some pages are broken??????
     
     # Request page
     req = Request(f"http://www.metacritic.com/browse/games/score/metascore/all/all/filtered?page={page_no}", headers=headers)      
@@ -21,12 +23,15 @@ for page_no in range(0,2): #157
     dframe_date = [] 
     dframe_title = []
     dframe_platform = []
-    
-    for extractor in BSoup.find("div",{"class":"product_rows"}).findChildren(recursive=False):
-        dframe_title.append(extractor.find("div",{"class":"product_item product_title"}).text.strip().splitlines()[0])
-        dframe_metascore.append(int(extractor.find("div",{"class":"metascore_w small game positive"}).string))
-        dframe_platform.append(extractor.find("div",{"class":"product_item product_title"}).text.strip().splitlines()[1].strip()[1:-1])
-        dframe_date.append(pd.to_datetime(extractor.find("div",{"class":"product_item product_date"}).string.strip()))
+    try:
+        for extractor in BSoup.find("div",{"class":"product_rows"}).findChildren(recursive=False):
+            dframe_title.append(extractor.find("div",{"class":"product_item product_title"}).text.strip().splitlines()[0])
+            dframe_metascore.append(int(extractor.find("div",{"class":"product_item product_score"}).findChildren(recursive=False)[0].string))
+            dframe_platform.append(extractor.find("div",{"class":"product_item product_title"}).text.strip().splitlines()[1].strip()[1:-1])
+            dframe_date.append(pd.to_datetime(extractor.find("div",{"class":"product_item product_date"}).string.strip()))
+    except AttributeError:
+        print(f"Page {page_no+1}|156 Corrupted. Skipping")
+        continue
     
     # Append dataframe to existing data
     dframeNew = pd.DataFrame(data={"Title": dframe_title,
@@ -35,6 +40,7 @@ for page_no in range(0,2): #157
                             "Release Date": dframe_date})
     dframe = pd.concat([dframe,dframeNew], ignore_index=True)
     
-# Find stuff out!!
+    print(f"Completed Page {page_no+1}|156")
     
-   
+# Find stuff out!!
+# filter multiplat releases to average    
