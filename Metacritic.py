@@ -28,3 +28,4 @@ num_total = len(dframe)
 
 # Distribution of all metascores
 plt.hist(dframe["Metascore"],bins=20)
+ 
